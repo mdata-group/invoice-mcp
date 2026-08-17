@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全性問題
+    url: https://github.com/mdata-group/invoice-mcp/security/advisories/new
+    about: 安全性問題請走私密回報，不要開公開 issue
+  - name: 疑難排解
+    url: https://github.com/mdata-group/invoice-mcp/blob/main/docs/troubleshooting.md
+    about: 開 issue 前請先看這裡，多數問題有現成解法

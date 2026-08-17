@@ -1,0 +1,23 @@
+name: endpoint liveness
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: MCP endpoint 應回 401（未帶金鑰）
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 -X POST \
+            https://mdata-mcp.invos.com.tw/invoice/mcp \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}')
+          echo "HTTP $code"
+          if [ "$code" != "401" ]; then
+            echo "::error::預期 401（服務活著且金鑰驗證生效），實際收到 $code。"
+            echo "::error::若 endpoint URL 有變更，需同步更新 README.md、docs/troubleshooting.md、server.json。"
+            exit 1
+          fi

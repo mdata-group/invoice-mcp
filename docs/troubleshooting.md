@@ -1,0 +1,79 @@
+# 疑難排解
+
+## 先跑這行自檢
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" -X POST \
+  https://mdata-mcp.invos.com.tw/invoice/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
+```
+
+**預期輸出 `401`。** 這代表服務活著、而且金鑰驗證正常運作（因為這行沒帶金鑰）。
+
+- 收到 `401` → 服務正常，問題出在你的 client 設定或金鑰，往下看。
+- 收到連線錯誤或逾時 → 網路問題，或服務異常，請開 issue。
+
+接著帶上你的金鑰再測一次：
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" -X POST \
+  https://mdata-mcp.invos.com.tw/invoice/mcp \
+  -H "Authorization: Bearer inv_你的金鑰" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0"}}}'
+```
+
+- 仍是 `401` → **金鑰的問題**（打錯、複製不全、已在 App 內刪除）。
+- 變成 `200` → **金鑰沒問題，是 client 設定的問題**，看下一節。
+
+## `/mcp` 看不到 invoice-mcp（Claude Code）
+
+最常見的原因：`claude mcp add` 預設是 **local scope**，設定綁在你**執行指令當下的資料夾**。在家目錄執行、卻從專案資料夾開 Claude Code，設定就不會載入。
+
+自查它到底掛在哪個資料夾、有沒有帶到金鑰：
+
+```bash
+python3 - <<'EOF'
+import json, os
+d = json.load(open(os.path.expanduser("~/.claude.json")))
+for path, proj in (d.get("projects") or {}).items():
+    m = (proj or {}).get("mcpServers") or {}
+    if "invoice-mcp" in m:
+        print(path, "-> 有帶 Authorization:", "Authorization" in m["invoice-mcp"].get("headers", {}))
+EOF
+```
+
+輸出的路徑必須等於你開 Claude Code 的資料夾。不對的話，在**正確的資料夾**重跑一次 `claude mcp add`，或改用 `--scope user` 一勞永逸。
+
+## 401
+
+1. 金鑰打錯或沒複製完整。金鑰**大小寫敏感、逐字比對**，不要改動任何字元。
+2. 金鑰已在 App 內被刪除。
+3. 注意**整個服務都需要金鑰** —— 沒有有效金鑰時，連工具清單都列不出來。所以「列不出工具」第一個要懷疑的就是金鑰。
+
+## 期別被拒絕
+
+月份只能是偶數月：`…02 / 04 / 06 / 08 / 10 / 12`。
+
+`11505` 無效，`11506` 才對（民國 115 年 5–6 月）。詳見 [tools.md](tools.md)。
+
+## 查詢結果金額偏少
+
+兩個常見原因：
+
+1. **沒翻完分頁** —— `paging.total_pages` 大於 1 時要逐頁取。
+2. **只查了一個期別** —— 「今年」涵蓋 6 個期別。
+
+明確在 prompt 裡要求「每個期別都查、每一頁都翻完」。
+
+## 資料好像不是最新的
+
+發票資料同步有延遲。要最新資料，先在發票存摺 App 內下拉更新，再回來查詢。
+
+## 還是不行
+
+[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)。
+
+⚠️ **回報時絕對不要貼上你的金鑰。** 需要貼設定檔時，請先把 `inv_` 開頭那串換成 `inv_REDACTED`。

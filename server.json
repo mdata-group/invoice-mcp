@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "tw.com.invos/invoice-mcp",
+  "title": "發票存摺 Invoice MCP",
+  "description": "查詢你自己的台灣電子發票（唯讀）。需要台灣「發票存摺」App 帳號並於 App 內產生金鑰。",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/mdata-group/invoice-mcp",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mdata-mcp.invos.com.tw/invoice/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer <你在發票存摺 App 內產生的金鑰>",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
