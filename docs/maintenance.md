@@ -10,12 +10,22 @@
 
 ## 支援清單同步規則
 
-「支援哪些 client」這份清單同時存在於兩個地方：
+「支援哪些 client」這件事同時出現在兩個地方：
 
 - 本 repo 的 `README.md` §2
 - App 內設定教學頁（`mdata-web/apps/mcp-tokens/src/screens/TutorialPage.tsx`）
 
 **兩者必須同一個 sprint 內一起改。** 這是本 repo 與 App 內容唯一的重疊項，也是唯一會漂移的地方。
+
+### ⚠️ 不要寫「不支援清單」
+
+2026-08-18 的教訓：README 原本列了一張「不支援的工具」表，其中「ChatGPT 不支援自訂 MCP server」**在文件還沒公開前就已經是錯的** —— ChatGPT Desktop 的「連接到自訂 MCP → 可串流 HTTP」已提供 URL、持有者權杖環境變數與自訂標頭欄位。那句話源自 2026-06 的內部文件，且把「網頁版/App」擴大解釋成整個 ChatGPT。
+
+各家 client 的 MCP 支援每個月都在變，**任何寫死的清單都會過期，而過期的清單就是誤導**。
+
+→ 改為**給判斷條件**：能用 streamable HTTP + 能帶自訂 `Authorization` header，就能連。清單只保留「我們實測過的」與「已知確實連不了的」，並註明以讀者手上版本為準。
+
+**App 內 `TutorialPage` 目前仍寫著「ChatGPT⋯尚未支援」，同樣需要更正** —— 那句話面向的使用者更多，優先度不低於 README。改動屬 `mdata-web`，需與 PM 確認文案。
 
 ## 內容 SoT 規則
 

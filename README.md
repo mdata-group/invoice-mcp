@@ -73,15 +73,25 @@ gemini mcp add --transport http invoice-mcp \
 
 設定完**重啟工具**，輸入 `/mcp` 應該看得到 `invoice-mcp`。
 
-### 不支援的工具
+### 其他工具能不能用？看兩個條件
+
+不必查清單，你的工具只要能做到這兩件事，原則上就能連：
+
+1. 以 **streamable HTTP** 連線到 MCP server
+2. 帶上自訂的 **`Authorization: Bearer <你的金鑰>`** header
+
+上面那三個 CLI 是**我們實測過**的。其他工具自行對照這兩個條件即可。
+
+**已知連不了的：**
 
 | 工具 | 原因 |
 | --- | --- |
-| Claude Desktop（聊天介面） | connector 只接受 OAuth Client ID/Secret，本服務用靜態 Bearer token |
-| ChatGPT 網頁版 / App | 不支援自訂 MCP server |
+| Claude Desktop（個人版 connector） | 自訂 connector 目前只接受 OAuth Client ID/Secret，沒有地方填靜態金鑰 |
 | Gemini 網頁版 / App（消費者版） | 不支援自訂 MCP server |
 
-→ 想用這些廠商的模型，請改用上面對應的 CLI 工具。
+**ChatGPT Desktop**：「連接到自訂 MCP」的「可串流 HTTP」模式提供 URL、持有者權杖環境變數與自訂標頭欄位，**兩個條件都具備**。我們尚未實測，若你接通了歡迎[開 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose) 告訴我們，我們補進實測清單。
+
+> ⚠️ 各家 client 的 MCP 支援變動非常快，上表以撰寫當下為準。**你手上那個版本的實際介面才算數** —— 看得到「streamable HTTP + 自訂 header」就試試看。
 
 ## 3. 能做什麼
 
