@@ -5,6 +5,9 @@
 https://github.com/mdata-group/invoice-mcp/issues/new/choose
 
 感謝你願意回報。
+
+維護者：改動前請先看維運說明
+https://github.com/mdata-group/invoice-mcp/blob/main/docs/maintenance.md
 -->
 
 ## 這個 PR 改了什麼

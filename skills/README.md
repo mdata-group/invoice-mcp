@@ -6,6 +6,6 @@
 - `paging.total_pages` 大於 1 時要把每一頁翻完
 - 「今年」涵蓋 6 個期別，不要只查一期就作答
 
-目前這些只寫在 [docs/prompts.md](../docs/prompts.md) 的小技巧裡，需要你自己提醒 AI。
+目前這些只寫在[範例 Prompt](../docs/prompts.md)的小技巧裡，需要你自己提醒 AI。
 
-有想法歡迎[開 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)。
+有想法歡迎[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)。

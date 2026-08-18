@@ -12,7 +12,7 @@
 
 「支援哪些 client」這件事同時出現在兩個地方：
 
-- 本 repo 的 `README.md` §2
+- 本 repo `README.md` 的 [設定你的 AI 工具](../README.md#2-設定你的-ai-工具)
 - App 內設定教學頁（`mdata-web/apps/mcp-tokens/src/screens/TutorialPage.tsx`）
 
 **兩者必須同一個 sprint 內一起改。** 這是本 repo 與 App 內容唯一的重疊項，也是唯一會漂移的地方。
@@ -41,6 +41,45 @@
 
 `server.json` 是官方 MCP Registry 的發布用 metadata，**目前尚未發布**，純屬預留。
 
-不上 registry 的理由：本服務需要台灣「發票存摺」App 帳號，registry 上看到它的絕大多數是裝不了的國際使用者；而目錄站（glama、mcp.so 等）主要靠**自動爬 GitHub、讀 repo topics** 收錄，不經過 registry。發布 registry 需要建立簽章金鑰並變更 production DNS，成本與收益不成比例。
+不上 registry 的理由：本服務需要台灣「發票存摺」App 帳號，registry 上看到它的絕大多數是裝不了的國際使用者；發布 registry 需要建立簽章金鑰並變更 production DNS，成本與收益不成比例。
+
+### ⚠️ 「靠 topics 讓目錄站收錄」是錯的
+
+2026-08-18 查證：本節原本寫「目錄站（glama、mcp.so 等）主要靠自動爬 GitHub、讀 repo topics 收錄」，**這個機制不存在**。
+
+- **Glama** 的 [收錄方法頁](https://glama.ai/mcp/methodology)寫明：上架靠 **maintainer 主動提交**，且提交者需通過 GitHub OAuth 驗證他對該 repo 有 write/admin 權限。沒有自動爬 GitHub，也不讀 topics。
+- **mcp.so／mcpservers.org** 這類則是靠 submit，或定期 re-scan 上游的 `awesome-mcp-servers` 清單。要被自動收錄，路徑是先進 awesome list，不是設 topics。
+- 更麻煩的是 Glama 的排序訊號 **TDQS** 評的是 **tool 的 JSON Schema**、不是 README；遠端 connector 要被 introspect，需 maintainer 另外提供一組 sandbox 憑證。**本服務沒有金鑰連 `tools/list` 都回 401，所以即使送上去也抓不到 tool 定義、評不了分。**
+
+因此：repo topics（`mcp` `mcp-server` `taiwan` `einvoice` `invoice` `claude-code`）**對目錄站收錄大概沒有作用**，留著無害但不要當成收錄手段。目錄站上架是主動動作，且前置條件是先備好 sandbox 金鑰與測試帳號 —— 屬通路／行銷範圍，不在本 repo 的工作範圍內。
 
 日後若要發布，namespace 為 `tw.com.invos/invoice-mcp`（DNS 驗證），需在 `invos.com.tw` 的 **apex** 加 TXT record（不可放在 selector 下），並以 `mcp-publisher` CLI 發布。詳見 workspace 內的 `docs/superpowers/specs/2026-08-17-invoice-mcp-public-repo-design.md` §7。
+
+## 連結規範
+
+`.github/` 底下的連結**一律用絕對 URL**。issue 與 PR 模板會被渲染在 repo 之外的頁面（issue／PR 本文），相對路徑在那裡是相對 `https://github.com/mdata-group/invoice-mcp/` 解析的，`../../docs/x.md` 會爬到 `https://github.com/mdata-group/docs/x.md`。
+
+2026-08-18 的教訓：`ISSUE_TEMPLATE/install-problem.md` 的「我已經跑過疑難排解的自檢指令」曾用 `../../docs/troubleshooting.md`，導致**每一張用該模板開出來的 issue，那個連結都是死的** —— 而它正是使用者自助分流的唯一入口。同目錄的 `config.yml` 一直是對的（絕對 blob URL），所以同一個目錄裡並存過兩種連結基準。
+
+repo 內的 `README.md`、`docs/`、`skills/` 之間用相對路徑即可，那些檔案只在 repo 內被瀏覽。
+
+## 刻意不做的事
+
+2026-08-18 對標 34 個熱門專案（高星 MCP server、需自備憑證的 MCP server、面向消費者的開發者工具、非英語專案四層各約 9 個）的實測普及率。下面每一項都**低於 50%**，也就是不是慣例，因此刻意不做。
+
+**看到這節請不要「順手補齊」。** 空目錄、只有 header 的 CHANGELOG、罐頭 CODE_OF_CONDUCT 會讓專案看起來像抄模板；說得出「知道有這些慣例、也知道普及率、並且說得出為什麼不做」才是有人在管。
+
+| 項目 | 普及率 | 不做的理由 |
+| --- | --- | --- |
+| `CODE_OF_CONDUCT.md` | 8/34 = 24% | 維護者只有內部團隊，且不收外部 PR |
+| `CHANGELOG.md` | 12/34 = 35% | 改用 GitHub Release notes |
+| `examples/` 目錄 | 3/34 = 9% | 只有兩個工具，範例已全在[範例 Prompt](prompts.md) |
+| demo GIF | 7/34 = 21% | 沒有金鑰連 `tools/list` 都回 401，無法錄不含真實發票的公開試玩 |
+| 教學影片 | 4/34 = 12% | 同上，且截圖已足夠說明 App 內取金鑰流程 |
+| FAQ 章節 | 3/34 = 9% | 內容已落在[疑難排解](troubleshooting.md) |
+| `docs/` index | 9/20 = 45% | 只有 4 個檔，README 已直連全部 |
+| 上官方 registry／目錄站 | —— | 見上方「關於 `server.json`」 |
+
+同一批統計裡**確實過半、而我們照做**的：LICENSE 88%、標題層級無跳級 85%、badge 79%、issue template 53%。
+
+反過來，我們有兩項是慣例外的自訂風格，留著但知道自己在偏離：**章節編號** 1/34 = 3%（安裝指南用序號幫讀者定位，但交叉引用一律走 anchor、不綁號碼，見上方「連結規範」）、**疑難排解拆檔** 1/34 = 3%（README 維持索引角色）。
