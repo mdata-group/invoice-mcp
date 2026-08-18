@@ -1,8 +1,21 @@
 # 發票 MCP
 
+[![endpoint liveness](https://github.com/mdata-group/invoice-mcp/actions/workflows/endpoint-liveness.yml/badge.svg)](https://github.com/mdata-group/invoice-mcp/actions/workflows/endpoint-liveness.yml)
+
 用你自己的 AI 工具查詢你的台灣電子發票。問「我這期中獎了嗎」「今年咖啡花多少」，讓 Claude / Codex / Gemini 直接讀你的發票資料回答。
 
 > **前提**：你需要一個台灣「**發票存摺**」App 帳號，並在 App 內產生金鑰。沒有帳號無法使用本服務。
+>
+> **怎麼確認你符合條件**
+>
+> - 能在 App 內找到 **個人設定 › 隱私與通知 › 我的金鑰** —— 找不到這個入口，代表 App 需要更新
+> <!-- TODO 產品確認：註冊發票存摺是否需要台灣手機號碼？確認後補成讀者可自我核對的條件。 -->
+> <!-- TODO 產品確認：「載具已歸戶」有沒有使用者自己看得到的判準？沒歸戶會裝好卻查不到資料，容易被誤報成 bug。 -->
+>
+> **不符合怎麼辦？** 這道門檻無法繞過，也沒有公開 demo —— 沒有有效金鑰時，連工具清單都列不出來。
+>
+> - **在台灣、還沒用過發票存摺** → [下載發票存摺 App](https://invos.com.tw)，註冊後回到 [1. 拿金鑰](#1-拿金鑰)
+> - **不在台灣** → 發票存摺是台灣專屬的消費者服務，目前沒有替代的取得方式。這個 repo 對你來說只能當作一個唯讀 MCP server 的實作參考。
 
 ---
 
@@ -89,7 +102,7 @@ gemini mcp add --transport http invoice-mcp \
 | Claude Desktop（個人版 connector） | 自訂 connector 目前只接受 OAuth Client ID/Secret，沒有地方填靜態金鑰 |
 | Gemini 網頁版 / App（消費者版） | 不支援自訂 MCP server |
 
-**ChatGPT Desktop**：「連接到自訂 MCP」的「可串流 HTTP」模式提供 URL、持有者權杖環境變數與自訂標頭欄位，**兩個條件都具備**。我們尚未實測，若你接通了歡迎[開 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose) 告訴我們，我們補進實測清單。
+**ChatGPT Desktop**：「連接到自訂 MCP」的「可串流 HTTP」模式提供 URL、持有者權杖環境變數與自訂標頭欄位，**兩個條件都具備**。我們尚未實測，若你接通了歡迎[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)告訴我們，我們補進實測清單。
 
 > ⚠️ 各家 client 的 MCP 支援變動非常快，上表以撰寫當下為準。**你手上那個版本的實際介面才算數** —— 看得到「streamable HTTP + 自訂 header」就試試看。
 
@@ -108,7 +121,7 @@ gemini mcp add --transport http invoice-mcp \
 - 「我今年在便利商店花了多少錢？」
 - 「上個月我買最多的是什麼？」
 
-更多範例 → [`docs/prompts.md`](docs/prompts.md)　｜　工具欄位詳表 → [`docs/tools.md`](docs/tools.md)
+更多範例 → [範例 Prompt](docs/prompts.md)　｜　工具欄位詳表 → [MCP 工具詳表](docs/tools.md)
 
 ## 4. 隱私與資料範圍
 
@@ -122,22 +135,18 @@ gemini mcp add --transport http invoice-mcp \
 
 最常見的三個原因：
 
-1. **`/mcp` 看不到工具** —— 多半是 Claude Code 的資料夾 scope 問題，見上方警告。
+1. **`/mcp` 看不到工具** —— 多半是 Claude Code 的資料夾 scope 問題，見 [設定你的 AI 工具](#2-設定你的-ai-工具) 的 scope 警告。
 2. **401** —— 金鑰錯誤或已被刪除。注意**整個服務都需要金鑰**，沒有有效金鑰連工具清單都列不出來。
 3. **期別被拒** —— 月份只能是偶數月。`11505` 無效，`11506` 才對（民國 115 年 5–6 月）。
 
-完整除錯與一行自檢指令 → [`docs/troubleshooting.md`](docs/troubleshooting.md)
+完整除錯與一行自檢指令 → [疑難排解](docs/troubleshooting.md)
 
 ## 6. 進階（規劃中）
 
-我們正在評估提供 Agent Skill，把「查整年要跨 6 個期別」「分頁要翻完」這類使用慣例直接教給你的 AI 工具。有想法歡迎開 issue。
+我們正在評估提供 Agent Skill，把「查整年要跨 6 個期別」「分頁要翻完」這類使用慣例直接教給你的 AI 工具。目前考慮的三條慣例 → [Skills（預留，尚未實作）](skills/README.md)。有想法歡迎[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)。
 
 ## 7. 問題回報
 
 - 安裝或使用問題 → [開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)
 - ⚠️ **回報時絕對不要貼上你的金鑰**（`inv_` 開頭那串）
 - 安全性問題 → 見 [SECURITY.md](SECURITY.md)，**請勿**開公開 issue
-
----
-
-還沒用過發票存摺？→ [下載發票存摺 App](https://invos.com.tw)

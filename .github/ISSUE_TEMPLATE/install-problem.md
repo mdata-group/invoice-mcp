@@ -7,7 +7,7 @@ labels: install
 ## ⚠️ 送出前請確認
 
 - [ ] 我**沒有**在這張 issue 裡貼上我的金鑰（`inv_` 開頭那串）
-- [ ] 我已經跑過 [docs/troubleshooting.md](../../docs/troubleshooting.md) 的自檢指令
+- [ ] 我已經跑過 [疑難排解](https://github.com/mdata-group/invoice-mcp/blob/main/docs/troubleshooting.md)的自檢指令
 
 ## 我用的工具
 
