@@ -150,3 +150,11 @@ gemini mcp add --transport http invoice-mcp \
 - 安裝或使用問題 → [開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)
 - ⚠️ **回報時絕對不要貼上你的金鑰**（`inv_` 開頭那串）
 - 安全性問題 → 見 [SECURITY.md](SECURITY.md)，**請勿**開公開 issue
+
+## 8. 授權
+
+本 repo 的文件、`server.json` 與設定範例以 [MIT](LICENSE) 授權 —— 歡迎轉載、翻譯、引用，請保留著作權標示。
+
+`docs/images/` 內的截圖是**發票存摺 App 的產品介面**，著作權歸產品方，**不在 MIT 授權範圍內**，轉載請另行取得同意。
+
+本 repo **不含服務端原始碼**。
