@@ -151,6 +151,8 @@ gemini mcp add --transport http invoice-mcp \
 - ⚠️ **回報時絕對不要貼上你的金鑰**（`inv_` 開頭那串）
 - 安全性問題 → 見 [SECURITY.md](SECURITY.md)，**請勿**開公開 issue
 
+本 repo 是官方安裝說明文件，**目前不開放外部 PR** —— 發現錯誤或有建議，請改開 issue，不用先 fork。
+
 ## 8. 授權
 
 本 repo 的文件、`server.json` 與設定範例以 [MIT](LICENSE) 授權 —— 歡迎轉載、翻譯、引用，請保留著作權標示。
