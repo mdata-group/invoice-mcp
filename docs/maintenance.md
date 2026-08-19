@@ -13,7 +13,7 @@
 「支援哪些 client」這件事同時出現在兩個地方：
 
 - 本 repo `README.md` 的 [設定你的 AI 工具](../README.md#2-設定你的-ai-工具)
-- App 內設定教學頁（`mdata-web/apps/mcp-tokens/src/screens/TutorialPage.tsx`）
+- App 內的設定教學頁（實作在內部 repo，追蹤見下）
 
 **兩者必須同一個 sprint 內一起改。** 這是本 repo 與 App 內容唯一的重疊項，也是唯一會漂移的地方。
 
@@ -23,9 +23,22 @@
 
 各家 client 的 MCP 支援每個月都在變，**任何寫死的清單都會過期，而過期的清單就是誤導**。
 
-→ 改為**給判斷條件**：能用 streamable HTTP + 能帶自訂 `Authorization` header，就能連。清單只保留「我們實測過的」與「已知確實連不了的」，並註明以讀者手上版本為準。
+→ 改為**給判斷條件**：能用 streamable HTTP + 能帶自訂 `Authorization` header，就能連。清單只保留「我們實測過的」，並註明以讀者手上版本為準。
 
-**App 內 `TutorialPage` 目前仍寫著「ChatGPT⋯尚未支援」，同樣需要更正** —— 那句話面向的使用者更多，優先度不低於 README。改動屬 `mdata-web`，需與 PM 確認文案。
+**2026-08-19 更新：連「已知確實連不了的」那張表也砍了。** 原本留的兩列後來都被證實過期 —— Claude Desktop 的自訂 connector 已有 **Request headers** 欄位（[官方文件](https://claude.com/docs/connectors/custom/remote-mcp)，Anthropic 標為 beta、分批放行），Gemini 消費者版也有了 Spark 自訂 app（需 Spark 資格且限美國）。**負面斷言的維護成本最高、危害也最大**，因為它會直接叫使用者不要嘗試。往後只列實測過的，不列連不了的。
+
+**App 內的設定教學頁仍寫著「ChatGPT⋯尚未支援」，這句話已由實測證明為錯**（2026-08-18 實測 ChatGPT Desktop 可用，設定方式已寫入 `README.md`）。**正確處置是把那句話刪掉，不是改成「已支援」** —— 改成後者等於承諾要永久追蹤第三方的支援狀態。該改動不在本 repo，需與 PM 確認文案（追蹤卡在內部 issue tracker）。
+
+### ⚠️ 非必要不列舉 AI 工具名
+
+上一條的另一面，同一個邏輯。判斷標準：**把工具名拿掉之後，讀者還知道這句適用於他嗎？**
+
+- **還知道 → 具名是多餘的，拿掉。** 例：README 開頭原本寫「讓 Claude / Codex / Gemini 直接讀你的發票資料回答」，但同一句前面已經說「用你自己的 AI 工具」—— 列舉純屬重複，而且 Gemini CLI 停服時逼我們回來改了一次。
+- **不知道了 → 具名在承載資訊，留著。** 例：「多半是 Claude Code 的資料夾 scope 問題」—— 拿掉會讓其他工具的使用者去找一個不存在的問題。
+
+具名只該出現在兩種地方：**安裝指令**，以及**某工具特有的行為或坑**。其餘一律寫「你的 AI 工具」。
+
+**封閉列舉改成舉例也算。** 隱私條款原本寫「（Anthropic／OpenAI／Google）」，已改為「（例如 Anthropic、OpenAI、Google）」—— 讀者可能用清單外的工具。
 
 ## 稱謂規則
 
@@ -45,6 +58,12 @@
 
 `.github/workflows/endpoint-liveness.yml` 每日檢查 endpoint 是否回 401。CI 轉紅時代表 endpoint URL 變更或服務異常 —— 先確認 URL，再同步更新 `README.md`、`docs/troubleshooting.md`、`server.json` 三處。
 
+### ⚠️ 不要讓 endpoint 廣告 OAuth
+
+2026-08-18 實測：三個 `/.well-known/oauth-*` 路徑都回 **404**，401 回應也**不帶** `WWW-Authenticate`。**這是靜態金鑰體驗正常運作的前提，不要「為了符合 MCP 規格」去補上。**
+
+一旦補了任何一項，client 就會開始探測 OAuth —— Claude Code 會把明明連得上的 server 顯示成「需要認證」並跳出用不到的 OAuth 流程（[claude-code#17152](https://github.com/anthropics/claude-code/issues/17152)），使用者體驗直接退化。
+
 ## 關於 `server.json`
 
 `server.json` 是官方 MCP Registry 的發布用 metadata，**目前尚未發布**，純屬預留。
@@ -61,7 +80,15 @@
 
 因此：repo topics（`mcp` `mcp-server` `taiwan` `einvoice` `invoice` `claude-code`）**對目錄站收錄大概沒有作用**，留著無害但不要當成收錄手段。目錄站上架是主動動作，且前置條件是先備好 sandbox 金鑰與測試帳號 —— 屬通路／行銷範圍，不在本 repo 的工作範圍內。
 
-日後若要發布，namespace 為 `tw.com.invos/invoice-mcp`（DNS 驗證），需在 `invos.com.tw` 的 **apex** 加 TXT record（不可放在 selector 下），並以 `mcp-publisher` CLI 發布。詳見 workspace 內的 `docs/superpowers/specs/2026-08-17-invoice-mcp-public-repo-design.md` §7。
+日後若要發布，namespace 為 `tw.com.invos/invoice-mcp`（DNS 驗證），需在 `invos.com.tw` 的 **apex** 加 TXT record（不可放在 selector 下），並以 `mcp-publisher` CLI 發布。上面兩段已包含發布所需的關鍵資訊。
+
+### ⚠️ 別把 Anthropic Directory 和 MCP Registry 混為一談
+
+上面「要建簽章金鑰 + 改 production DNS」的成本**只適用於 open MCP Registry**。[Anthropic 官方文件](https://claude.com/docs/connectors/directory)明寫：「No domain-ownership proof (DNS or `.well-known`) is required—that requirement applies only to the open MCP Registry, not the Anthropic Directory.」
+
+上 Anthropic Connectors Directory 只需要 Team/Enterprise org 與 directory 管理權限，**不需要 DNS 驗證**。
+
+不過**結論不變（兩個都不做）**，理由是：Directory connector 與 custom connector「run on the same infrastructure」，進 Directory 不會解決認證問題；且受眾同樣是絕大多數裝不了的國際使用者。**理由要寫對，別讓下一個人以為「因為 DNS 成本高所以不能上 Directory」。**
 
 ## 連結規範
 
