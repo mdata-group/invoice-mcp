@@ -2,7 +2,7 @@
 
 [![endpoint liveness](https://github.com/mdata-group/invoice-mcp/actions/workflows/endpoint-liveness.yml/badge.svg)](https://github.com/mdata-group/invoice-mcp/actions/workflows/endpoint-liveness.yml)
 
-用你自己的 AI 工具查詢你的台灣電子發票。問「我這期中獎了嗎」「今年咖啡花多少」，讓 Claude / Codex / Gemini 直接讀你的發票資料回答。
+用你自己的 AI 工具查詢你的台灣電子發票。問「我這期中獎了嗎」「今年咖啡花多少」，讓它直接讀你的發票資料回答。
 
 > **前提**：你需要一個台灣「**發票存摺**」App 帳號，並在 App 內產生金鑰。沒有帳號無法使用本服務。
 >
@@ -34,7 +34,7 @@
 
 權限固定是**唯讀**，不能改。
 
-建立完成後會顯示設定指令，選你的工具（Claude Code / Codex / Gemini CLI）直接複製：
+建立完成後會顯示設定指令，選你的工具直接複製：
 
 <img src="docs/images/03-save-key.png" alt="建立完成" width="300">
 
@@ -52,21 +52,13 @@
 ### Claude Code
 
 ```bash
-# ⚠️ 先 cd 到你平常開 Claude Code 的資料夾再執行（原因見下方）
-claude mcp add --transport http invoice-mcp \
+claude mcp add --scope user --transport http invoice-mcp \
   https://mdata-mcp.invos.com.tw/invoice/mcp \
   -H "Authorization: Bearer inv_你的金鑰"
 ```
 
-> **最常見的雷**：不帶 `--scope` 時是 **local scope**，設定會綁在你**執行當下的資料夾**。在家目錄執行、卻從專案資料夾開 Claude Code，就會載不到設定 → 連不上、`/mcp` 看不到工具。
->
-> 想一次設定到處都能用，改成 user scope：
->
-> ```bash
-> claude mcp add --scope user --transport http invoice-mcp \
->   https://mdata-mcp.invos.com.tw/invoice/mcp \
->   -H "Authorization: Bearer inv_你的金鑰"
-> ```
+> `--scope user` 是刻意加的 —— 不帶它的話，設定只綁在你**執行指令當下的資料夾**，換個資料夾開 Claude Code 就會 `/mcp` 看不到工具。這是最常見的雷。
+> 已經踩到 → [`docs/troubleshooting.md`](docs/troubleshooting.md) 有一行自檢指令可以查出設定掛在哪。
 
 ### Codex
 
@@ -76,15 +68,29 @@ codex mcp add --transport http invoice-mcp \
   -H "Authorization: Bearer inv_你的金鑰"
 ```
 
-### Gemini CLI
-
-```bash
-gemini mcp add --transport http invoice-mcp \
-  https://mdata-mcp.invos.com.tw/invoice/mcp \
-  -H "Authorization: Bearer inv_你的金鑰"
-```
-
 設定完**重啟工具**，輸入 `/mcp` 應該看得到 `invoice-mcp`。
+
+### ChatGPT Desktop
+
+新增 MCP server 的入口與操作流程看官方說明 → <https://learn.chatgpt.com/docs/extend/mcp>
+
+在「連接到自訂 MCP」畫面把類型切成**可串流 HTTP**，填這四格：
+
+| 欄位 | 填什麼 |
+| --- | --- |
+| 名稱 | `invoice-mcp` |
+| URL | `https://mdata-mcp.invos.com.tw/invoice/mcp` |
+| 標頭 → 金鑰 | `Authorization` |
+| 標頭 → 值 | `Bearer inv_你的金鑰` |
+
+「持有者權杖環境變數」留空，存檔後重啟。兩個容易踩的地方：
+
+- **「標頭」是左右兩格。** 左邊填 header 名稱 `Authorization`，右邊才填值。只填右邊會連不上。
+- **`Bearer` 後面要有一個半形空格。** 少了空格會回 401。
+
+查詢時 ChatGPT 會開啟 Work 面板執行工具，這是正常的。
+
+> ⚠️ 這筆設定只存在**你這台電腦**，**不會**同步到 ChatGPT 手機版或網頁版。
 
 ### 其他工具能不能用？看兩個條件
 
@@ -93,18 +99,13 @@ gemini mcp add --transport http invoice-mcp \
 1. 以 **streamable HTTP** 連線到 MCP server
 2. 帶上自訂的 **`Authorization: Bearer <你的金鑰>`** header
 
-上面那三個 CLI 是**我們實測過**的。其他工具自行對照這兩個條件即可。
+上面三個是**我們實測過**的。其他工具自行對照這兩個條件即可。
 
-**已知連不了的：**
+> ⚠️ 各家 client 的 MCP 支援每個月都在變，**我們不維護「支援／不支援」清單** —— 那種清單一定會過期，而過期的清單就是誤導。
+>
+> **你手上那個版本的實際介面才算數。** 看得到「streamable HTTP + 自訂 header」就試試看；找不到地方填 header，就是還沒支援到你的版本。
 
-| 工具 | 原因 |
-| --- | --- |
-| Claude Desktop（個人版 connector） | 自訂 connector 目前只接受 OAuth Client ID/Secret，沒有地方填靜態金鑰 |
-| Gemini 網頁版 / App（消費者版） | 不支援自訂 MCP server |
-
-**ChatGPT Desktop**：「連接到自訂 MCP」的「可串流 HTTP」模式提供 URL、持有者權杖環境變數與自訂標頭欄位，**兩個條件都具備**。我們尚未實測，若你接通了歡迎[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)告訴我們，我們補進實測清單。
-
-> ⚠️ 各家 client 的 MCP 支援變動非常快，上表以撰寫當下為準。**你手上那個版本的實際介面才算數** —— 看得到「streamable HTTP + 自訂 header」就試試看。
+**Gemini CLI 使用者請注意**：Google 已於 2026-06-18 讓 Gemini CLI [停止服務個人帳號](https://github.com/google-gemini/gemini-cli/discussions/28017) —— Google AI Pro、Ultra 與免費方案都包含在內，**付費也無法繼續使用**。繼任者是 Antigravity CLI，我們**尚未實測**；若你接通了歡迎[開一張 issue](https://github.com/mdata-group/invoice-mcp/issues/new/choose)告訴我們。
 
 ## 3. 能做什麼
 
@@ -127,7 +128,7 @@ gemini mcp add --transport http invoice-mcp \
 
 1. **唯讀** —— 這兩個工具只能讀，**不能**刪除、捐贈或修改你的任何發票資料。建立金鑰時權限固定顯示為「唯讀」，沒有其他選項。
 2. **只有你自己的資料** —— 金鑰對應單一帳號，拿不到任何其他人的發票。
-3. **資料會送到你選的 AI 廠商** —— 查詢結果會進入你自己的 AI 工具，因此會傳送給該工具的模型供應商（Anthropic／OpenAI／Google）。發票存摺不經手、也不負擔這段推理費用。**不想外流的發票，就別在該對話裡查詢它。**
+3. **資料會送到你選的 AI 廠商** —— 查詢結果會進入你自己的 AI 工具，因此會傳送給該工具的模型供應商（例如 Anthropic、OpenAI、Google）。發票存摺不經手、也不負擔這段推理費用。**不想外流的發票，就別在該對話裡查詢它。**
 
 金鑰的控制權在你手上：上限 5 把、**有效期限最長 180 天**（到期自動失效）、可隨時在 App 內刪除且立即生效。此外，**已公開外洩的金鑰可能被系統自動停用**。
 
